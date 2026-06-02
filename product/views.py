@@ -5,15 +5,19 @@ from .models import Category, Product, Review
 from .serializers import CategoryListSerializer, CategoryDetailSerializer
 from .serializers import ProductListSerializer, ProductDetailSerializer
 from .serializers import ReviewListSerializer, ReviewDetailSerializer
+from django.db.models import Avg
+
 
 
 @api_view(['GET'])
 def review_list_api_view(request):
     reviews = Review.objects.all()
     list_ = ReviewListSerializer(reviews, many=True).data
-    return Response(
-        data=list_
-    )
+    rating = Review.objects.aggregate(avg=Avg('stars'))['avg']
+    return Response(data={
+        'reviews': list_,
+        'rating': round(rating, 2) if rating else 0
+    })
 
 
 @api_view(['GET'])
